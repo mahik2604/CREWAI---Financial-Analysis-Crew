@@ -90,42 +90,8 @@ class SearchTools():
     search_news_tool = GoogleSearchAPIWrapper(google_cse_id = 'google_cse_id', google_api_key='google_api_key',k=5)
     return search_news_tool.run(query)
 
-class BrowserTools():
-
-  @tool("Scrape website content")
-  def scrape_and_summarize_website(website):
-    """Useful to scrape and summarize a website content"""
-
-    url = f"https://chrome.browserless.io/content?token={'browserless_api_key'}"
-    payload = json.dumps({"url": website})
-    headers = {'cache-control': 'no-cache', 'content-type': 'application/json'}
-    response = requests.request("POST", url, headers=headers, data=payload)
-    elements = partition_html(text=response.text)
-    content = "\n\n".join([str(el) for el in elements])
-    content = [content[i:i + 8000] for i in range(0, len(content), 8000)]
-    summaries = []
-    for chunk in content:
-      agent = Agent(
-          role='Principal Researcher',
-          goal=
-          'Do amazing research and summaries based on the content you are working with',
-          backstory=
-          "You're a Principal Researcher at a big company and you need to do research about a given topic.",
-          allow_delegation=False)
-      task = Task(
-          agent=agent,
-          description=
-          f'Analyze and summarize the content below, make sure to include the most relevant information in the summary, return only the summary nothing else.\n\nCONTENT\n----------\n{chunk}'
-      )
-      summary = task.execute()
-      summaries.append(summary)
-    return "\n\n".join(summaries)
 
 from crewai import Agent
-
-# from tools.browser_tools import BrowserTools
-# from tools.calculator_tools import CalculatorTools
-# from tools.search_tools import SearchTools
 
 # from langchain.tools.yahoo_finance_news import YahooFinanceNewsTool
 
@@ -141,7 +107,6 @@ class StockAnalysisAgents():
       llm=ChatOpenAI(temperature=0.0, model_name="gpt-3.5-turbo", openai_api_key = 'key'),
       verbose=True,
       tools=[
-        # BrowserTools.scrape_and_summarize_website,
         SearchTools.search_internet,
         CalculatorTools.calculate,
         HistData.historical_data,
@@ -162,7 +127,6 @@ class StockAnalysisAgents():
       llm=ChatOpenAI(temperature=0.0, model_name="gpt-3.5-turbo", openai_api_key = 'key'),
       verbose=True,
       tools=[
-        # BrowserTools.scrape_and_summarize_website,
         SearchTools.search_internet,
         SearchTools.search_news,
         # YahooFinanceNewsTool(),
@@ -184,7 +148,6 @@ class StockAnalysisAgents():
       llm=ChatOpenAI(temperature=0.0, model_name="gpt-3.5-turbo", openai_api_key = 'key'),
       verbose=True,
       tools=[
-        # BrowserTools.scrape_and_summarize_website,
         SearchTools.search_internet,
         SearchTools.search_news,
         CalculatorTools.calculate,
@@ -251,7 +214,7 @@ class StockAnalysisTasks():
         the stock's future performance.
 
         Your final answer must be an expanded report that now
-        also highlights significant findings from these filings,
+        also highlights significant findings from these reports,
         including any red flags or positive indicators for
         your customer.{self.__tip_section()}
       """),
@@ -332,25 +295,6 @@ if __name__ == "__main__":
   print("## Here is the Report")
   print("########################\n")
   print(result)
-
-if __name__ == "__main__":
-  print("## Welcome to Financial Analysis Crew")
-  print('-------------------------------')
-  company = input(
-    dedent("""
-      What is the company you want to analyze?
-    """))
-
-  financial_crew = FinancialCrew(company)
-  result = financial_crew.run()
-  print("\n\n########################")
-  print("## Here is the Report")
-  print("########################\n")
-  print(result)
-
-
-
-
 
 
 
